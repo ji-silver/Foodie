@@ -6,8 +6,12 @@ import {
   heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
+import { useNavigation } from "@react-navigation/native";
 
 export default function WelcomeScreen() {
+  const navigation = useNavigation();
+
+  // 공유 값 설정(컴포넌트 마운트 될 때 setTimeout으로 시간 지연 후 스프링 애니메이션 설정)
   const ring1padding = useSharedValue(0);
   const ring2padding = useSharedValue(0);
 
@@ -22,6 +26,7 @@ export default function WelcomeScreen() {
       () => (ring2padding.value = withSpring(ring2padding.value + hp(5.5))),
       300
     );
+    setTimeout(() => navigation.navigate("Home"), 2500); // 2.5초 뒤에 페이지 이동
   }, []);
 
   return (
