@@ -19,6 +19,7 @@ import {
 import Categories from "../components/categories";
 import axios from "axios";
 import Recipes from "../components/recipes";
+import { API_KEY } from "@env";
 
 export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState("반찬");
@@ -27,7 +28,6 @@ export default function HomeScreen() {
   const [search, setSearch] = useState("");
   const [recipesFound, setRecipesFound] = useState(true);
 
-  const API_KEY = "758aca942efa483285a7";
   const API_BASE_URL = "http://openapi.foodsafetykorea.go.kr/api";
 
   useEffect(() => {
