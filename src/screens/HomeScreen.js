@@ -1,4 +1,11 @@
-import { View, Text, ScrollView, Image, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -17,6 +24,9 @@ export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState("반찬");
   const [categories, setCategories] = useState([]);
   const [recipes, setRecipes] = useState([]);
+  const [search, setSearch] = useState("");
+  const [recipesFound, setRecipesFound] = useState(true);
+
   const API_KEY = "758aca942efa483285a7";
   const API_BASE_URL = "http://openapi.foodsafetykorea.go.kr/api";
 
@@ -49,23 +59,40 @@ export default function HomeScreen() {
   };
 
   // 기본(반찬) 선택된 레시피 불러오기
-  const getRecipes = async (category = "반찬") => {
+  const getRecipes = async (category = "반찬", search = "") => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/${API_KEY}/COOKRCP01/json/1/100/RCP_PAT2=${category}`
-      );
+      let url = `${API_BASE_URL}/${API_KEY}/COOKRCP01/json/1/100/RCP_PAT2=${category}`;
+
+      // 검색어가 있을 시 url에 붙이기
+      if (search.trim() !== "") {
+        url += `&RCP_NM=${search}`;
+      }
+
+      const response = await axios.get(url);
+
       if (
         response &&
         response.data &&
         response.data.COOKRCP01 &&
         response.data.COOKRCP01.row
       ) {
-        const recipes = response.data.COOKRCP01.row.map((recipe) => ({
+        let fetchedRecipes = response.data.COOKRCP01.row.map((recipe) => ({
           id: recipe.RCP_SEQ,
           image: recipe.ATT_FILE_NO_MAIN,
           name: recipe.RCP_NM,
         }));
-        setRecipes(recipes);
+
+        if (search.trim() !== "") {
+          fetchedRecipes = fetchedRecipes.filter((recipe) =>
+            recipe.name.includes(search)
+          );
+        }
+
+        setRecipes(fetchedRecipes);
+        setRecipesFound(fetchedRecipes.length > 0);
+      } else {
+        setRecipes([]);
+        setRecipesFound(false); // 레시피가 없다고 표시
       }
     } catch (err) {
       console.log("레시피 오류:", err.message);
@@ -77,6 +104,11 @@ export default function HomeScreen() {
     getRecipes(category);
     setActiveCategory(category);
     setRecipes([]);
+  };
+
+  // 검색 버튼 누르면 getRecipes실행
+  const handleSearch = () => {
+    getRecipes(activeCategory, search);
   };
 
   return (
@@ -113,10 +145,18 @@ export default function HomeScreen() {
             placeholderTextColor={"gray"}
             style={{ fontSize: hp(2) }}
             className="flex-1 text-base mb-1 pl-3 tracking-wider"
+            value={search}
+            onChangeText={(text) => setSearch(text)}
           />
-          <View className="bg-white rounded-full p-3">
-            <MagnifyingGlassIcon size={hp(2.5)} strokeWidth={3} color="gray" />
-          </View>
+          <TouchableOpacity onPress={handleSearch}>
+            <View className="bg-white rounded-full p-3">
+              <MagnifyingGlassIcon
+                size={hp(2.5)}
+                strokeWidth={3}
+                color="gray"
+              />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* 카테고리 */}
@@ -130,7 +170,13 @@ export default function HomeScreen() {
 
         {/* 레시피 */}
         <View>
-          <Recipes recipes={recipes} categories={categories} />
+          {recipesFound ? (
+            <Recipes recipes={recipes} categories={categories} />
+          ) : (
+            <Text style={{ fontSize: hp(2) }} className="text-center mt-10">
+              검색 결과가 없습니다.
+            </Text>
+          )}
         </View>
       </ScrollView>
     </View>
