@@ -11,41 +11,72 @@ import {
 } from "react-native-heroicons/outline";
 import Categories from "../components/categories";
 import axios from "axios";
+import Recipes from "../components/recipes";
 
 export default function HomeScreen() {
-  const [activeCategory, setActiveCategory] = useState("Beef");
+  const [activeCategory, setActiveCategory] = useState("반찬");
   const [categories, setCategories] = useState([]);
+  const [recipes, setRecipes] = useState([]);
+  const API_KEY = "758aca942efa483285a7";
+  const API_BASE_URL = "http://openapi.foodsafetykorea.go.kr/api";
 
-  // 마운트 되면 불러오기
   useEffect(() => {
     getCategories();
-    console.log(categories);
+    getRecipes();
   }, []);
 
+  // 카테고리 불러오기
   const getCategories = async () => {
     try {
       const response = await axios.get(
-        "http://openapi.foodsafetykorea.go.kr/api/758aca942efa483285a7/COOKRCP01/json/1/1000"
+        `${API_BASE_URL}/${API_KEY}/COOKRCP01/json/1/100`
       );
 
+      if (response?.data?.COOKRCP01?.row) {
+        // 카테고리 목록에서 "국&찌개"를 "국"으로 변경
+        const fetchedCategories = [
+          ...new Set(
+            response.data.COOKRCP01.row.map((recipe) =>
+              recipe.RCP_PAT2.replace("&찌개", "")
+            )
+          ),
+        ];
+        setCategories(fetchedCategories);
+      }
+    } catch (err) {
+      console.log("카테고리 오류:", err.message);
+    }
+  };
+
+  // 기본(반찬) 선택된 레시피 불러오기
+  const getRecipes = async (category = "반찬") => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/${API_KEY}/COOKRCP01/json/1/100/RCP_PAT2=${category}`
+      );
       if (
         response &&
         response.data &&
         response.data.COOKRCP01 &&
         response.data.COOKRCP01.row
       ) {
-        const fetchedCategories = response.data.COOKRCP01.row.map(
-          (recipe) => recipe.RCP_PAT2
-        );
-
-        // Set을 사용하여 중복된 값 제거
-        const uniqueCategories = [...new Set(fetchedCategories)];
-
-        setCategories(uniqueCategories);
+        const recipes = response.data.COOKRCP01.row.map((recipe) => ({
+          id: recipe.RCP_SEQ,
+          image: recipe.ATT_FILE_NO_MAIN,
+          name: recipe.RCP_NM,
+        }));
+        setRecipes(recipes);
       }
     } catch (err) {
-      console.log("Error categories:", err.message);
+      console.log("레시피 오류:", err.message);
     }
+  };
+
+  // 카테고리 변경
+  const handleChangeCategory = (category) => {
+    getRecipes(category);
+    setActiveCategory(category);
+    setRecipes([]);
   };
 
   return (
@@ -90,13 +121,16 @@ export default function HomeScreen() {
 
         {/* 카테고리 */}
         <View>
-          {categories.length > 0 && (
-            <Categories
-              categories={categories}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-            />
-          )}
+          <Categories
+            categories={categories}
+            activeCategory={activeCategory}
+            handleChangeCategory={handleChangeCategory}
+          />
+        </View>
+
+        {/* 레시피 */}
+        <View>
+          <Recipes recipes={recipes} categories={categories} />
         </View>
       </ScrollView>
     </View>

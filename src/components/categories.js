@@ -10,7 +10,7 @@ import { categoryData } from "../constants/index";
 export default function Categories({
   categories,
   activeCategory,
-  setActiveCategory,
+  handleChangeCategory,
 }) {
   return (
     <Animated.View entering={FadeInDown.duration(500).springify()}>
@@ -32,7 +32,7 @@ export default function Categories({
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => setActiveCategory(category)}
+              onPress={() => handleChangeCategory(category)}
               className="flex items-center space-y-1"
             >
               <View className={"rounded-full p-[6px] " + activeButtonClass}>
