@@ -8,8 +8,10 @@ import MasonryList from "@react-native-seoul/masonry-list";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import Loading from "./loading";
 import { CachedImage } from "../helpers/image";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Recipes({ categories, recipes }) {
+  const navigation = useNavigation();
   return (
     <View className="mx-4 space-y-3">
       {categories.length === 0 || recipes.length === 0 ? (
@@ -21,7 +23,9 @@ export default function Recipes({ categories, recipes }) {
           keyExtractor={(item) => item.id}
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item, i }) => <RecipeCard item={item} index={i} />}
+          renderItem={({ item, i }) => (
+            <RecipeCard item={item} index={i} navigation={navigation} />
+          )}
           onEndReachedThreshold={0.1}
         />
       )}
@@ -29,7 +33,7 @@ export default function Recipes({ categories, recipes }) {
   );
 }
 
-const RecipeCard = ({ item, index }) => {
+const RecipeCard = ({ item, index, navigation }) => {
   let isEven = index % 2 == 0; // 짝수인지 아닌지 확인 후 padding 주기
   return (
     <Animated.View
@@ -45,6 +49,7 @@ const RecipeCard = ({ item, index }) => {
           paddingRight: isEven ? 8 : 0,
         }}
         className="flex justify-center mb-5 space-y-1"
+        onPress={() => navigation.navigate("RecipeDetail", { ...item })}
       >
         <CachedImage
           uri={item.image}

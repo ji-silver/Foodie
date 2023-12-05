@@ -79,6 +79,7 @@ export default function HomeScreen() {
         let fetchedRecipes = response.data.COOKRCP01.row.map((recipe) => ({
           id: recipe.RCP_SEQ,
           image: recipe.ATT_FILE_NO_MAIN,
+          imageMain: recipe.ATT_FILE_NO_MK,
           name: recipe.RCP_NM,
         }));
 
