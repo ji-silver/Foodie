@@ -59,6 +59,7 @@ const RecipeCard = ({ item, index, navigation }) => {
             height: index % 3 === 0 ? hp(25) : hp(35),
             borderRadius: 20,
           }}
+          sharedTransitionTag={item.image}
         />
         <Text style={{ fontSize: hp(1.8) }} className="ml-2">
           {item.name}

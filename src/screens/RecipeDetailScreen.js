@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { API_KEY } from "@env";
 import Loading from "../components/loading";
+import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 
 export default function RecipeDetailScreen(props) {
   let item = props.route.params;
@@ -44,7 +45,6 @@ export default function RecipeDetailScreen(props) {
           details: recipe.RCP_PARTS_DTLS,
           instructions: getInstructions(recipe),
         }));
-        console.log(fetchedRecipes[0]);
         setMeal(fetchedRecipes[0]);
         setLoading(false);
       }
@@ -102,11 +102,15 @@ export default function RecipeDetailScreen(props) {
             borderBottomRightRadius: 40,
             marginTop: 4,
           }}
+          sharedTransitionTag={item.image}
         />
       </View>
 
       {/* 버튼 */}
-      <View className="w-full absolute flex-row justify-between items-center pt-14">
+      <Animated.View
+        entering={FadeIn.delay(200).duration(1000)}
+        className="w-full absolute flex-row justify-between items-center pt-14"
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           className="p-2 ml-5 rounded-full bg-white"
@@ -123,7 +127,7 @@ export default function RecipeDetailScreen(props) {
             color={isFavorite ? "red" : "gray"}
           />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* 레시피 설명 */}
       {loading ? (
@@ -131,14 +135,23 @@ export default function RecipeDetailScreen(props) {
       ) : (
         <View className="px-4 flex justify-between space-y-4 pt-8">
           {/* 이름 */}
-          <View className="space-y-2">
+          <Animated.View
+            entering={FadeInDown.duration(700).springify().damping(12)}
+            className="space-y-2"
+          >
             <Text style={{ fontSize: hp(3) }} className="font-bold flex-1">
               {meal.name}
             </Text>
-          </View>
+          </Animated.View>
 
           {/* 레시피 정보 */}
-          <View className="space-y-4">
+          <Animated.View
+            entering={FadeInDown.delay(100)
+              .duration(700)
+              .springify()
+              .damping(12)}
+            className="space-y-4"
+          >
             <Text style={{ fontSize: hp(2) }} className="font-bold">
               기본 재료
             </Text>
@@ -164,10 +177,16 @@ export default function RecipeDetailScreen(props) {
                 );
               })}
             </View>
-          </View>
+          </Animated.View>
 
           {/* 레시피 내용 */}
-          <View className="space-y-4">
+          <Animated.View
+            entering={FadeInDown.delay(200)
+              .duration(700)
+              .springify()
+              .damping(12)}
+            className="space-y-4"
+          >
             <Text style={{ fontSize: hp(2) }} className="font-bold mt-5">
               조리 순서
             </Text>
@@ -197,7 +216,7 @@ export default function RecipeDetailScreen(props) {
                   )}
                 </View>
               ))}
-          </View>
+          </Animated.View>
         </View>
       )}
     </ScrollView>
